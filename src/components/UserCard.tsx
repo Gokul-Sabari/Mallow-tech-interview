@@ -2,7 +2,7 @@ import React from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../styles/UserCard.css";
 
-type Props = { users: any[] };
+type Props = { users: any[] ,onEdit:(user:any)=>void};
 
 const UserCard: React.FC<Props> = ({ users,onEdit }) => {
   return (

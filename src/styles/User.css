@@ -3,20 +3,28 @@
   background: #f5f7fa;
   min-height: 100vh;
 }
+
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
 }
+
 .topbar-user {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: end;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
   font-size: 16px;
-  margin-bottom: 15px;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 
 .logout {
   border: none;
@@ -49,7 +57,7 @@
 .toggle-btns .active {
   background: #1677ff;
   color: white;
-  
+
 }
 
 
@@ -148,6 +156,7 @@
   background: #1677ff;
   color: white;
 }
+
 .users-table {
   width: 100%;
 
@@ -160,16 +169,17 @@
   vertical-align: middle;
   border-bottom: 1px solid #ddd;
 }
+
 .users-content-card {
   background: white;
   padding: 22px;
   border-radius: 12px;
   margin-top: 50px;
-  box-shadow: 0px 3px 12px rgba(0,0,0,0.08);
+  box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.08);
 }
 
 .users-table th {
-  background-color: #f0f0f0; 
+  background-color: #f0f0f0;
   text-align: left;
 }
 
@@ -181,7 +191,7 @@
 }
 
 .email-text {
-  color: #007bff; 
+  color: #007bff;
 }
 
 .edit {
@@ -248,18 +258,18 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
 }
 
-/* Popup box */
 .user-popup-box {
   background: #fff;
   width: 420px;
-  height: 470px; /* fixed height to show header + footer */
+  height: 470px;
+  
   padding: 0;
   border-radius: 10px;
   display: flex;
@@ -309,7 +319,7 @@
   border: 1px solid #bfbfbf;
   outline: none;
   font-size: 14px;
-  height:20px
+  height: 20px
 }
 
 /* Footer */
