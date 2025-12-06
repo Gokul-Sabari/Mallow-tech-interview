@@ -5,10 +5,13 @@ import UserCard from "../components/UserCard";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { fetchUsers } from "../redux/slices/usersSlice";
 import { CloseOutlined, LogoutOutlined, ProfileOutlined, SearchOutlined, TableOutlined } from "@ant-design/icons";
-
+import axiosClient from "../api/axiosClient";
+import { showToast } from "../components/Toaster";
+import { logout } from "../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 const UsersPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { list, page, totalPages } = useAppSelector((state) => state.User);
+  const { list, page, total_pages } = useAppSelector((state) => state.User);
   const [view, setView] = useState<"table" | "card">("table");
   const [search, setSearch] = useState("");
   const [showPopup, setShowPopup] = useState(false)
@@ -19,52 +22,78 @@ const UsersPage: React.FC = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
-
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showDeletePopup, setShowDeletePopup] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<any>(null);
+
+  const handleDeleteClick = (user: any) => {
+    setUserToDelete(user);
+    setShowDeletePopup(true);
+  };
+
 
   useEffect(() => {
     dispatch(fetchUsers(page));
   }, [dispatch, page]);
 
-  const handleSubmit = () => {
+
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await axiosClient.delete(`/users/${userToDelete.id}`);
+      showToast.success("User deleted!");
+      dispatch(fetchUsers(page));
+    } catch (err) {
+      console.error(err);
+      showToast.error("Failed to delete user!");
+    } finally {
+      setShowDeletePopup(false);
+      setUserToDelete(null);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!firstName || !lastName || !email || !image) {
-       showToast("All fields are required!", "error"); 
+      alert("All fields are required!");
       return;
     }
 
     const payload = {
-      firstName,
-      lastName,
+      first_name: firstName,
+      last_name: lastName,
       email,
-      profile: image,
+      avatar: image,
     };
 
-    const url = editMode
-      ? `https://reqres.in/api/users/${selectedUser.id}`
-      : "https://reqres.in/api/users";
+    const url = editMode ? `/users/${selectedUser.id}` : `/users`;
+    const method = editMode ? "put" : "post";
 
-    fetch(url, {
-      method: editMode ? "PUT" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": "reqres_1af77f68c54d455b865dfacb1f622a38"
-      },
-      body: JSON.stringify(payload),
-    })
-      .then(res => res.json())
-      .then(data => {
-        
-        showToast(editMode ? "User updated!" : "User created!", "success");
-        alert(editMode ? "User updated!" : "User created!");
-        setShowPopup(false);
-        setEditMode(false);
-        setSelectedUser(null);
-      })
-      .catch(() => showToast("Something went wrong!", "error")); 
+    try {
+      const res = await axiosClient({
+        url,
+        method,
+        data: payload,
+      });
 
-      
+
+      showToast.success(editMode ? "User updated!" : "User created!");
+
+      setShowPopup(false);
+      setEditMode(false);
+      setSelectedUser(null);
+      dispatch(fetchUsers(page));
+
+    } catch (err) {
+      console.error(err);
+      alert("Request failed!");
+    }
   };
+
+
 
   useEffect(() => {
     if (selectedUser) {
@@ -86,10 +115,18 @@ const UsersPage: React.FC = () => {
 
       <div className="topbar-user">
         <span style={{ color: "white" }}>Elon Musk</span>
-        <button className="logout">
-          <LogoutOutlined />
+        <button
+          className="logout"
+          onClick={() => {
+            dispatch(logout());
+            navigate("/", { replace: true });
+          }}
+        >
+          <span><LogoutOutlined /></span>
         </button>
+
       </div>
+
 
       <div className="users-content-card">
         <h2 className="page-title">Users</h2>
@@ -131,25 +168,47 @@ const UsersPage: React.FC = () => {
             setSelectedUser(user);
             setEditMode(true);
             setShowPopup(true);
-          }} />
+          }}
+            onDelete={(user) => handleDeleteClick(user)} />
 
         ) : (
           <UserCard users={filteredUsers} onEdit={(user: any) => {
             setSelectedUser(user);
             setEditMode(true);
             setShowPopup(true);
-          }} />
+          }}
+            onDelete={(user) => handleDeleteClick(user)} />
         )}
 
         <div className="pagination-box">
-          <button>{"<"}</button>
-          {[...Array(totalPages)].map((_, i) => (
-            <button key={i} className={page === i + 1 ? "active" : ""}>
-              {i + 1}
-            </button>
-          ))}
-          <button>{">"}</button>
+          <button
+            disabled={page === 1}
+            onClick={() => dispatch(fetchUsers(page - 1))}
+          >
+            {"<"}
+          </button>
+
+          {[...Array(total_pages)].map((_, i) => {
+            const pageNum = i + 1;
+            return (
+              <button
+                key={pageNum}
+                className={page === pageNum ? "active" : ""}
+                onClick={() => dispatch(fetchUsers(pageNum))}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
+
+          <button
+            disabled={page === total_pages}
+            onClick={() => dispatch(fetchUsers(page + 1))}
+          >
+            {">"}
+          </button>
         </div>
+
       </div>
 
       {showPopup && (
@@ -158,7 +217,15 @@ const UsersPage: React.FC = () => {
             <div className="user-popup-box">
               <div className="popup-header">
                 <h3>Create New User</h3>
-                <span className="close-popup" onClick={() => setShowPopup(false)}><CloseOutlined /></span>
+                <span className="close-popup" onClick={() => {
+                  setShowPopup(false);
+                  setEditMode(false);
+                  setSelectedUser(null);
+                  setFirstName("");
+                  setLastName("");
+                  setEmail("");
+                  setImage("");
+                }}><CloseOutlined /></span>
               </div>
               <div className="popup-body">
                 <label><span className="required">*</span>First Name</label>
@@ -172,16 +239,16 @@ const UsersPage: React.FC = () => {
               </div>
 
               <div className="popup-footer">
-                <button className="cancel-btn"  onClick={() => {
-    setShowPopup(false);
-    setEditMode(false);
-    setSelectedUser(null);
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setImage("");
-  }}
- >Cancel</button>
+                <button className="cancel-btn" onClick={() => {
+                  setShowPopup(false);
+                  setEditMode(false);
+                  setSelectedUser(null);
+                  setFirstName("");
+                  setLastName("");
+                  setEmail("");
+                  setImage("");
+                }}
+                >Cancel</button>
                 <button className="save-btn" onClick={handleSubmit}>Submit</button>
               </div>
             </div>
@@ -190,12 +257,40 @@ const UsersPage: React.FC = () => {
         </>
       )}
 
+
+      {showDeletePopup && (
+        <div className="user-popup-overlay">
+          <div className="user-popup-delete-box">
+            <div className="popup-header">
+              <h3>Confirm Delete</h3>
+              <span
+                className="close-popup"
+                onClick={() => setShowDeletePopup(false)}
+              >
+                &times;
+              </span>
+            </div>
+            <div className="popup-body">
+              <p>Are you sure you want to delete this item?</p>
+            </div>
+            <div className="popup-footer">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowDeletePopup(false)}
+              >
+                No
+              </button>
+              <button className="save-btn" onClick={handleConfirmDelete}>
+                Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
   );
 };
 
 export default UsersPage;
-function showToast(arg0: string, arg1: string) {
-  throw new Error("Function not implemented.");
-}
-

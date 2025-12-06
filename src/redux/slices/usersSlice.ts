@@ -1,28 +1,42 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "../../api/axiosClient";
 import { User } from "../../types/User";
+import { fetchLink } from "../../components/fetchLink";
 
 interface UsersState {
   list: User[];
   loading: boolean;
   page: number;
-  totalPages: number;
+  total_pages: number;
 }
 
 const initialState: UsersState = {
   list: [],
   loading: false,
   page: 1,
-  totalPages: 1,
+  total_pages: 1,
 };
 
 export const fetchUsers = createAsyncThunk(
   "users/fetchUsers",
-  async (page: number) => {
-    const res = await axiosClient.get(`/users?page=${page}`);
-    return res.data; 
+  async (page: number, { rejectWithValue }) => {
+    try {
+      const res = await fetchLink({
+        address: `/users?page=${page}`,
+        method: "GET",
+      });
+
+      return {
+        data: res.data,         
+        page: res.page,         
+        total_pages: res.total_pages,
+      };
+    } catch (err: any) {
+      return rejectWithValue(err?.message || "Failed to fetch users");
+    }
   }
 );
+
 
 export const createUser = createAsyncThunk(
   "users/createUser",
@@ -56,29 +70,22 @@ const usersSlice = createSlice({
       state.page = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchUsers.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchUsers.fulfilled, (state, action) => {
-        state.loading = false;
-        state.list = action.payload.data;      
-        state.page = action.payload.page;      
-        state.totalPages = action.payload.total_pages;
-      })
-      .addCase(createUser.fulfilled, (state, action) => {
-        state.list.unshift(action.payload);
-      })
-      .addCase(updateUser.fulfilled, (state, action) => {
-        state.list = state.list.map((u) =>
-          u.id === action.payload.id ? { ...u, ...action.payload } : u
-        );
-      })
-      .addCase(deleteUser.fulfilled, (state, action) => {
-        state.list = state.list.filter((u) => u.id !== action.payload);
-      });
-  },
+ extraReducers: (builder) => {
+  builder
+    .addCase(fetchUsers.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(fetchUsers.fulfilled, (state, action) => {
+      state.loading = false;
+      state.list = action.payload.data;
+      state.page = action.payload.page;
+      state.total_pages = action.payload.total_pages;
+    })
+    .addCase(fetchUsers.rejected, (state) => {
+      state.loading = false;
+    });
+}
+
 });
 
 export const { setPage } = usersSlice.actions;

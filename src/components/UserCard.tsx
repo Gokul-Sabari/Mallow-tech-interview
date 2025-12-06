@@ -2,9 +2,9 @@ import React from "react";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import "../styles/UserCard.css";
 
-type Props = { users: any[] ,onEdit:(user:any)=>void};
+type Props = { users: any[] ,onEdit:(user:any)=>void,onDelete:(user:any)=>void};
 
-const UserCard: React.FC<Props> = ({ users,onEdit }) => {
+const UserCard: React.FC<Props> = ({ users,onEdit,onDelete }) => {
   return (
     <div className="card-grid">
       {users.map((u: any) => (
@@ -12,7 +12,7 @@ const UserCard: React.FC<Props> = ({ users,onEdit }) => {
           <div className="hover-actions">
             {/* <button className="action edit"></button> */}
                <button className="action edit" onClick={()=>onEdit(u)}><EditOutlined /></button>
-            <button className="action delete"><DeleteOutlined /></button>
+            <button className="action delete" onClick={()=>onDelete(u)}><DeleteOutlined /></button>
           </div>
 
           <img src={u.avatar} alt={u.email} className="card-avatar" />

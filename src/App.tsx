@@ -1,16 +1,13 @@
-// src/App.tsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import UsersPage from "./pages/UserPage";
+import { BrowserRouter as Router } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import Toaster from "./components/Toaster";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/users" element={<UsersPage />} />
-      </Routes>
+      <Toaster />
+      <AppRoutes />
     </Router>
   );
 }

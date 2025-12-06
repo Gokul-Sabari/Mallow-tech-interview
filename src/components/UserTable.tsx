@@ -1,8 +1,8 @@
 import React from "react";
 
-type Props = { users: any[],onEdit:(user:any)=>void };
+type Props = { users: any[],onEdit:(user:any)=>void,onDelete:(user:any)=>void };
 
-const UserTable: React.FC<Props> = ({ users,onEdit }) => {
+const UserTable: React.FC<Props> = ({ users,onEdit,onDelete}) => {
 
     
   return (
@@ -28,7 +28,7 @@ const UserTable: React.FC<Props> = ({ users,onEdit }) => {
             <td>{u.last_name}</td>
             <td>
               <button className="edit" onClick={()=>onEdit(u)}>Edit</button>
-              <button className="delete">Delete</button>
+              <button className="delete" onClick={()=>onDelete(u)}>Delete</button>
             </td>
           </tr>
         ))}

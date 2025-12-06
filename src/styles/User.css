@@ -15,15 +15,16 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  display: flex;
-  justify-content: end;
-  align-items: center;
-  gap: 15px;
-  font-size: 16px;
   width: 100%;
-  box-sizing: border-box;
+  height: 60px;
+  background: #222;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  z-index: 100;
 }
+
 
 
 .logout {
@@ -50,15 +51,19 @@
   padding: 6px 14px;
   border: 1px solid #c9cfd9;
   background: white;
-  cursor: pointer;
   border-radius: 4px;
+  cursor: pointer;
+  margin: 0 8px; /* space around buttons (horizontal) */
 }
+
 
 .toggle-btns .active {
-  background: #1677ff;
-  color: white;
-
+  background: transparent;
+  color: #1677ff;
+  border: 2px solid #1677ff;
+  border-radius: 6px;          /* or 20px for pill shape */
 }
+
 
 
 .right-controls {
@@ -126,6 +131,7 @@
   padding: 5px 12px;
   border-radius: 4px;
   margin-right: 6px;
+  cursor: pointer;
 }
 
 .delete {
@@ -134,6 +140,7 @@
   color: white;
   padding: 5px 12px;
   border-radius: 4px;
+  cursor: pointer;
 }
 
 
@@ -277,6 +284,18 @@
   animation: fadeIn 0.25s ease-in-out;
 }
 
+.user-popup-delete-box {
+  background: #fff;
+  width: 420px;
+  height: 200px;
+  
+  padding: 0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.25s ease-in-out;
+}
+
 /* Header */
 .popup-header {
   display: flex;
@@ -353,3 +372,20 @@
   margin-left: 2px;
   font-weight: bold;
 }
+
+
+
+
+.user-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+

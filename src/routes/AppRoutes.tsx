@@ -1,13 +1,38 @@
+import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/LoginPage";
 import UsersPage from "../pages/UserPage";
+import ProtectedRoute from "../routes/PrivateRoutes";
 
-export default function AppRoutes() {
-  const token = localStorage.getItem("token");
+const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={token ? <Navigate to="/users" /> : <LoginPage />} />
-      <Route path="/users" element={token ? <UsersPage /> : <Navigate to="/" />} />
+
+      <Route
+        path="/"
+        element={
+          localStorage.getItem("token") ? (
+            <Navigate to="/users" replace />
+          ) : (
+            <LoginPage />
+          )
+        }
+      />
+
+
+      <Route
+        path="/users"
+        element={
+          <ProtectedRoute>
+            <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
-}
+};
+
+export default AppRoutes;

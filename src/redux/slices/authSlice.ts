@@ -1,75 +1,68 @@
-// src/redux/slices/authSlice.ts
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosClient from "../../api/axiosClient";
-import axios from "axios";
-
-interface AuthState {
-  token: string | null;
-  loading: boolean;
-  error: string;
-  isAuthenticated: boolean;
-}
-
-const initialState: AuthState = {
-  token: null,
-  loading: false,
-  error: "",
-  isAuthenticated: false,
-};
 
 export const login = createAsyncThunk(
   "auth/login",
-  async (payload: { email: string; password: string }, { rejectWithValue }) => {
+  async ({ email, password }: { email: string; password: string }, thunkAPI) => {
     try {
-      const res = await axios.post(
-        "https://reqres.in/api/login",
-        {
-          email: payload.email,
-          password: payload.password,
-        },
-        {
-            headers: {
-            "x-api-key": 'reqres_1af77f68c54d455b865dfacb1f622a38',   
-          }
-        }
-      );
-         console.log("res.data",import.meta.env.API_KEY)
-      return res.data;
-    } catch (err: any) {
-        throw err
-      return rejectWithValue(err.response);
+      const res = await axiosClient.post("/login", { email, password });
+      return res.data; 
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response?.data?.error || "Login failed");
     }
   }
 );
 
+interface AuthState {
+  loading: boolean;
+  isAuthenticated: boolean;
+  token: string | null;
+  error: string | null;
+  loginJustHappened: boolean;  // 👈 new
+}
+
+const initialState: AuthState = {
+  loading: false,
+  isAuthenticated: false,
+  token: null,
+  error: null,
+  loginJustHappened: false,   // 👈 new
+};
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     logout(state) {
-      state.token = null;
       state.isAuthenticated = false;
+      state.token = null;
+      localStorage.removeItem("token");
     },
+    clearLoginFlag(state) {
+      state.loginJustHappened = false;
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
         state.loading = true;
-        state.error = "";
+        state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.token = action.payload.token;
         state.isAuthenticated = true;
+        state.token = action.payload.token;
+        state.loginJustHappened = true; 
+
+        localStorage.setItem("token", action.payload.token);
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(login.rejected, (state, action: any) => {
         state.loading = false;
-        state.error = action.payload as string;
-        state.isAuthenticated = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearLoginFlag } = authSlice.actions;
 export default authSlice.reducer;
+
