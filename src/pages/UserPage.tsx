@@ -271,7 +271,7 @@ const UsersPage: React.FC = () => {
               </span>
             </div>
             <div className="popup-body">
-              <p>Are you sure you want to delete this item?</p>
+              <p>Are you sure you want to delete this User?</p>
             </div>
             <div className="popup-footer">
               <button
